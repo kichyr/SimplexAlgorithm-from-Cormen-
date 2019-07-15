@@ -40,8 +40,8 @@ private:
         this->v = v;
         nRows = A.size();
         nCol = A[0].size();
-        N = range(0, nCol - nRows);
-        B = range(nCol - nRows, nCol);
+        N = range(0, 3);
+        B = range(3, 6);
 
     }
 
@@ -59,10 +59,14 @@ public:
     std::vector< std::vector<double> > in_A,
     std::vector<double> in_b,
     std::vector<double> in_c,
-    int in_v) { 
+    int in_v) {
         initialize_Simplex(in_A, in_b, in_c, in_v);
-        std::vector<double> delta = std::vector<double>(A.size());
+        std::vector<double> delta = std::vector<double>(A.size(), __INT_MAX__);
         while(true){
+            //nulling delta
+            for(int i = 0; i < delta.size(); i++)
+                delta[i] = __INT_MAX__;
+
             //exists index e in N : c[e] > 0
             int e = -1;
             for(auto i : N) {
@@ -70,17 +74,17 @@ public:
                     e = i;
                 }
             }
-            cout << c << "\n" << N;
+
             if(e < 0) break;
 
             //
-             for(auto i : B) {
+            for(auto i : B) {
                 if(A[i][e] > 0)
                     delta[i] = b[i] / A[i][e];
                 else
                     delta[i] = __INT_MAX__;
             }
-            cout << "OK";
+            
             // find l that minimized delta[l]
             int l = 0, curr_min = __INT_MAX__;
             for(int i = 0; i < delta.size(); i++)
@@ -90,7 +94,19 @@ public:
                 }
             if(delta[l] == __INT_MAX__)
                 throw "unbounded";
-            //pivot(A, l, e);
+            cout << A;
+            cout << b << endl;
+            cout << "B:" << B << "N:" << N;
+            cout << "e:" << e << "l:" << l;
+            cout << "\n------------------\n";
+
+            pivot(A, l, e);
+
+            cout << A;
+            cout << b << endl;
+            cout << "B:" << B << "N:" << N;
+            cout << "------------------\n";
+            
         }
         //generating answer
         std::vector<double> x = std::vector<double>(nCol);
@@ -108,15 +124,15 @@ public:
     int l,
     int e
     ) {
-        /* b[e] = b[l] / oldA[l][e];
+        b[e] = b[l] / oldA[l][e];
 
         for(auto i : N) {
             if(i == e) continue;
             A[e][i] = oldA[l][i] / oldA[l][e];
         }
         A[e][l] = 1 / oldA[l][e];
-    
-         for(auto i : B) {
+        //------------
+        for(auto i : B) {
             if(i == l) continue;
             b[i] = b[i] - oldA[i][e] * b[e];
             for(auto j : N) {
@@ -133,18 +149,20 @@ public:
         }
         c[l] = -c[e] * A[e][l];
         //Calc new Basis and NotBasis variables
-        for(auto i = N.begin(); i < N.end(); i++)
+        for(auto i = N.begin(); i != N.end(); i++)
             if(*i == e) {
                 N.erase(i);
                 break;
             }
+        
         N.push_back(l);
         
-        for(auto i = B.begin(); i < B.end(); i++)
+        for(auto i = B.begin(); i != B.end(); i++)
             if(*i == l) {
+                cout << "\nokkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk\n";
                 B.erase(i);
                 break;
             }
-        B.push_back(e); */
+        B.push_back(e);
     }
 };
