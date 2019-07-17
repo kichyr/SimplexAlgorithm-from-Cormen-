@@ -12,13 +12,17 @@ Input data for method *do_Simplex* is matrix A and vector b represents constrain
 for task:
 
 max:3x + y + 2z
-        subject to: x <= 30
+        
+	subject to: x <= 30
                     2y + z <= 24
                     2z <= 36
 
 
 A = { {1, 0, 0}, { 0, 2, 1 }, {0, 0, 2} };
+
 b = { 30, 24, 36 }
+
 c = { 3, 1, 2 }
+
 last_paramter = 0
 
