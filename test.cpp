@@ -3,24 +3,42 @@
 
 using namespace std;
 
+// C++ template to print vector container elements 
+template <typename T> 
+ostream& operator<<(ostream& os, const vector<T>& v) 
+{ 
+    os << "["; 
+    for (int i = 0; i < v.size(); ++i) { 
+        os << v[i]; 
+        if (i != v.size() - 1) 
+            os << ", "; 
+    } 
+    os << "]\n"; 
+    return os; 
+} 
 
 
 int main()
 {
     std::vector <std::vector<double> > vec2D = {
-                {0,0,0,0,0,0},
-                {0,0,0,0,0,0},
-                {0,0,0,0,0,0},
-                { 2, 1, 1,0,0,0},
-                { 1, 3, 2,0,0,0},
-                { 2, 1, 2,0,0,0}
+                {1, 0, 0},
+                {0, 2, 1},
+                {0, 0, 2}
                 };
-        std::vector<double> b = {0, 0, 0, 180,300,240};
-        std::vector<double> c = {6, 5, 4, 0 , 0, 0};
+        std::vector<double> b = {30,24,36};
+        std::vector<double> c = {3, 1, 2};
 
-        cout << vec2D;
-      // hear the make the class parameters with A[m][n] vector b[] vector and c[] vector
+    /* here we solve this task: 
+        max:3x + y + 2z
+        subject to: x <= 30
+                    2y + z <= 24
+                    2z <= 36
+    */
     Simplex simplex;
+    /*
+    the last one parametr is free member of max function,
+    for example if max f = x + y + z + 3, than last parametr will be equal to 3
+    */
     cout << simplex.do_Simplex(vec2D, b, c, 0);
     return 0;
 }

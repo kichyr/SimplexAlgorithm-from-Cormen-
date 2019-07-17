@@ -1,22 +1,5 @@
-
 #include<vector>
 #include<algorithm>
-
-#include<iostream>
-using namespace std;
-// C++ template to print vector container elements 
-template <typename T> 
-ostream& operator<<(ostream& os, const vector<T>& v) 
-{ 
-    os << "["; 
-    for (int i = 0; i < v.size(); ++i) { 
-        os << v[i]; 
-        if (i != v.size() - 1) 
-            os << ", "; 
-    } 
-    os << "]\n"; 
-    return os; 
-} 
 
 class Simplex {
 private:
@@ -34,15 +17,20 @@ private:
     std::vector<double> & c,
     int v // free member of max function
     ) {
-        this->A = A;
-        this->b = b;
-        this->c = c;
         this->v = v;
         nRows = A.size();
         nCol = A[0].size();
-        N = range(0, 3);
-        B = range(3, 6);
-
+        N = range(0, nCol);
+        B = range(nCol, nCol + nRows);
+        this->c = c;
+        this->c.resize(nCol + nRows, 0);
+        this->b = std::vector<double>(nCol + nRows, 0);
+        for(int i = nCol; i < nCol + nRows; i++)
+            this->b[i] = b[i - nCol];
+        this->A = std::vector<std::vector <double> >(nCol + nRows, std::vector<double>(nCol + nRows, 0));
+        for(int i = 0; i < nRows; i++)
+            for(int j = 0; j < nCol; j++)
+                this->A[i+nCol][j] = A[i][j];
     }
 
     //utils
@@ -51,72 +39,6 @@ private:
         for(int i = from; i < to; i++)
             out[i - from] = i;
         return out;
-    }
-    //
-
-public:
-    std::vector<double> do_Simplex(
-    std::vector< std::vector<double> > in_A,
-    std::vector<double> in_b,
-    std::vector<double> in_c,
-    int in_v) {
-        initialize_Simplex(in_A, in_b, in_c, in_v);
-        std::vector<double> delta = std::vector<double>(A.size(), __INT_MAX__);
-        while(true){
-            //nulling delta
-            for(int i = 0; i < delta.size(); i++)
-                delta[i] = __INT_MAX__;
-
-            //exists index e in N : c[e] > 0
-            int e = -1;
-            for(auto i : N) {
-                if(c[i] > 0) { 
-                    e = i;
-                }
-            }
-
-            if(e < 0) break;
-
-            //
-            for(auto i : B) {
-                if(A[i][e] > 0)
-                    delta[i] = b[i] / A[i][e];
-                else
-                    delta[i] = __INT_MAX__;
-            }
-            
-            // find l that minimized delta[l]
-            int l = 0, curr_min = __INT_MAX__;
-            for(int i = 0; i < delta.size(); i++)
-                if(delta[i] < curr_min) {
-                    l = i;
-                    curr_min = delta[i];
-                }
-            if(delta[l] == __INT_MAX__)
-                throw "unbounded";
-            cout << A;
-            cout << b << endl;
-            cout << "B:" << B << "N:" << N;
-            cout << "e:" << e << "l:" << l;
-            cout << "\n------------------\n";
-
-            pivot(A, l, e);
-
-            cout << A;
-            cout << b << endl;
-            cout << "B:" << B << "N:" << N;
-            cout << "------------------\n";
-            
-        }
-        //generating answer
-        std::vector<double> x = std::vector<double>(nCol);
-        for(int i = 0; i < nCol; i++) {
-            if(std::find(B.begin(), B.end(), i) != B.end())
-                x[i] = b[i];
-            else
-                x[i] = 0;
-        }
-        return x;
     }
 
     void pivot(
@@ -159,10 +81,62 @@ public:
         
         for(auto i = B.begin(); i != B.end(); i++)
             if(*i == l) {
-                cout << "\nokkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk\n";
                 B.erase(i);
                 break;
             }
         B.push_back(e);
+    }
+    //
+public:
+    std::vector<double> do_Simplex(
+    std::vector< std::vector<double> > in_A,
+    std::vector<double> in_b,
+    std::vector<double> in_c,
+    int in_v) {
+        initialize_Simplex(in_A, in_b, in_c, in_v);
+        std::vector<double> delta = std::vector<double>(A.size(), __INT_MAX__);
+        while(true){
+            //nulling delta
+            for(int i = 0; i < delta.size(); i++)
+                delta[i] = __INT_MAX__;
+
+            //exists index e in N : c[e] > 0
+            int e = -1;
+            for(auto i : N) {
+                if(c[i] > 0) { 
+                    e = i;
+                }
+            }
+            if(e < 0) break;
+
+            //
+            for(auto i : B) {
+                if(A[i][e] > 0)
+                    delta[i] = b[i] / A[i][e];
+                else
+                    delta[i] = __INT_MAX__;
+            }
+            
+            // find l that minimized delta[l]
+            int l = 0, curr_min = __INT_MAX__;
+            for(int i = 0; i < delta.size(); i++)
+                if(delta[i] < curr_min) {
+                    l = i;
+                    curr_min = delta[i];
+                }
+            if(delta[l] == __INT_MAX__)
+                throw "unbounded";
+
+            pivot(A, l, e);
+        }
+        //generating answer
+        std::vector<double> x = std::vector<double>(nCol);
+        for(int i = 0; i < nCol; i++) {
+            if(std::find(B.begin(), B.end(), i) != B.end())
+                x[i] = b[i];
+            else
+                x[i] = 0;
+        }
+        return x;
     }
 };
